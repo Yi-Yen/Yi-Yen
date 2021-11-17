@@ -1,0 +1,71 @@
+---
+title: "my_eye"
+author: "Yi-Yen"
+date: "11/16/2021"
+output: html_document
+---
+
+```{r load the data}
+#I would like to have a sence of the data.
+#import the raw data
+library(tidyverse)
+my_eye <- read.delim("~/Documents/reading eye movement/eye/my_eye.tsv")
+
+#there are 962632 observations and 90 variables.
+my_eye %>% 
+  select(Eye.movement.type, Gaze.event.duration..ms., Eye.movement.type.index, Fixation.point.X..DACS.px., Fixation.point.Y..DACS.px., Gaze.direction.left.X..DACS.norm., Gaze.direction.left.Y..DACS.norm., Gaze.direction.left.Z..DACS.norm., Pupil.diameter.left..mm.)
+```
+
+```{r description of the data}
+#quick look at my data
+str(my_eye)
+```
+```{r see the nature of the data}
+#also see the characteristics of the numeric data
+#I realized that there are many variables can be omitted.
+summary(my_eye)
+```
+
+```{r check the number of NA}
+colSums(is.na(my_eye))
+```
+```{r check the NA}
+#some are typed NA but some are just null. Not clear about the null data.
+colSums(!is.na(my_eye))
+#The following variables include NAs. Eyetracker.timestamp..μs., Gaze.point.X..DACS.px.(and Y),  Gaze.point.left.X..DACS.px.(and Y), Gaze.point.right.X..DACS.px.(and Y) , Presented.Media.width..px. (and height), Presented.Media.position.X..DACS.px. (and Y),  Original.Media.width..px. (and height), Gaze.event.duration..ms. , Eye.movement.type.index,  Fixation.point.X..DACS.px. (and Y), Mouse.position.X..DACS.px. (and Y)
+```
+
+```{r find the missing data}
+
+library(visdat)
+
+my_eye %>% 
+  slice_tail() %>% 
+   vis_miss()
+#Error in vis_miss(), because the data exceeds the recommended size for viz. Even I put the mar_large_data into FALSE.
+#The plot currently is blank. Because the vis_miss() recommend to downsampling in order to have a clear plot.
+```
+```{r trim a bit the data}
+#the dataframe is extreme huge, therefore, I decide to trim and only take part of it to get the feel of the dataframe.
+trim_m_my_eye <- my_eye %>% 
+  filter(Computer.timestamp..ms.>= 409881336 & Computer.timestamp..ms.<= 409884974)
+#the timestamp 409881336 is the median of the variable, and 409884974 is the mean value.
+```
+
+```{r}
+str(trim_m_my_eye)
+```
+```{r try again to visualize my missing values}
+trim_m_my_eye %>% 
+  vis_miss()
+#yes there is something missing.
+```
+```{r trun the chr to numeric}
+
+# trim_m_my_eye <- trim_m_my_eye %>% 
+  sub(",", ".", trim_m_my_eye$Gaze.direction.left.X..DACS.norm.)
+#I want to trun the characters into numeric variables because numeric data is easier to do statistics.
+#but sub() function does not work for me. 
+ 
+```
+
