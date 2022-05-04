@@ -1,0 +1,144 @@
+---
+title: "flora_score"
+author: "Yi-Yen"
+date: "4/11/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(psych)
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(readxl)
+score <- read_excel("~/Documents/eye_movement/data/s3.dat.master_26012022_yy.xlsx")
+View(score)
+```
+
+```{r}
+#cor(score) : 'x' must be numeric. So I filter out some columns.
+score_corr_numeric <- score %>% 
+  select(-ID, 
+         -grp,
+         -gender,
+         -age,
+         -lang,
+         -degree,
+         -study,
+         -study.yr)
+score_corr <- score_corr_numeric %>% 
+  select(pre.total,
+         post.total,
+         transf.total,
+         essay.total,
+         AI.Topic.score..3.,
+         Diff.Topic.score..3.,
+         Scaff.Topic.score..3.,
+         Connection.score..3.,
+         Idea.score..3.,
+         origi2,
+         Word.score..3.)
+corr_tests <- round(cor(score_corr),1)
+corr_tests
+#word score is strongly correlated to the essay score (r=0.8).
+
+pmat <- cor_mat(score_corr)
+pmat
+library(ggcorrplot)
+ggcorrplot::ggcorrplot(corr_tests,
+                       type = "lower",
+                       lab = TRUE,
+                       insig = "blank")
+```
+```{r}
+metrics_test <- read.delim("~/Documents/eye_movement/data/0504 Metrics.tsv")
+metrics_test <-metrics_test %>%
+  filter(Participant !="fsc3_005",
+         Participant !="fsc3_007",
+         Participant !="fsc3_008",
+         Participant !="fsc3_009")
+metrics_test
+```
+
+
+```{r}
+#I read the file to see the AOI
+AOI_test <- utils::read.delim("~/Documents/eye_movement/data/c3_006.tsv")
+#I would like to see how many fixations on the writing AOI.
+#-1= the AOI is inactive. 0= the AOI is active but the fixation is not on it. 1= the AOI is active and the fixation is on it. 
+library(ggplot2)
+ggplot(AOI_test, aes(AOI.hit..Learning.session..C..Recording_fsc3_006...writing_c3006.)) + 
+  geom_histogram()
+#I would like to see how many fixations inside the writing AOI. #-1= the AOI is inactive. 0= the AOI is active but the fixation is not on it. 1= the AOI is active and the fixation is on it. 
+table(AOI_test$AOI.hit..Learning.session..C..Recording_fsc3_006...writing_c3006.)
+```
+
+
+
+```{r setup, include=FALSE}
+#I read the file to see the AOI
+AOI_test_c3010 <- utils::read.delim("~/Documents/eye_movement/data/c3_010.tsv")
+#I would like to see how many fixations on the writing AOI.
+#-1= the AOI is inactive. 0= the AOI is active but the fixation is not on it. 1= the AOI is active and the fixation is on it. 
+library(ggplot2)
+histo_c3010 <- ggplot(AOI_test_c3010, aes(AOI.hit..Learning.session..C..Recording_fsc3_010...writing_c3010.)) + 
+  geom_histogram()
+histo_c3010
+#I would like to see how many fixations inside the writing AOI. #-1= the AOI is inactive. 0= the AOI is active but the fixation is not on it. 1= the AOI is active and the fixation is on it. 
+table(AOI_test_c3010$AOI.hit..Learning.session..C..Recording_fsc3_010...writing_c3010.)
+```
+
+```{r setup, include=FALSE}
+#I read the file to see the AOI
+AOI_test_c3014 <- utils::read.delim("~/Documents/eye_movement/data/c_3014.tsv")
+#I would like to see how many fixations on the writing AOI.
+#-1= the AOI is inactive. 0= the AOI is active but the fixation is not on it. 1= the AOI is active and the fixation is on it. 
+library(ggplot2)
+histo_c3014 <- ggplot(AOI_test_c3014, aes(AOI.hit..Learning.session..C..Recording_fsc3_014...writing_c3014.)) + 
+  geom_histogram()
+histo_c3014
+#I would like to see how many fixations inside the writing AOI. #-1= the AOI is inactive. 0= the AOI is active but the fixation is not on it. 1= the AOI is active and the fixation is on it. 
+table(AOI_test_c3014$AOI.hit..Learning.session..C..Recording_fsc3_014...writing_c3014.)
+```
+
+```{r mutate one column: exclude idea+ originality}
+library(dplyr)
+score <- score %>% 
+  mutate(new_essay= 
+           AI.Topic.score..3.+
+           Diff.Topic.score..3.+
+           Scaff.Topic.score..3.+
+           Connection.score..3.+
+           Word.score..3.)
+```
+
+
+```{r plot the normal distribution test of essay score in two ways}
+#the sample size is small, therefore, I test the normality with few ways. 
+#Shapiro-Wilk’s method
+library(rstatix)
+score %>% 
+  shapiro_test(new_essay)
+# Density plot
+library(ggpubr)
+ggdensity(score$new_essay, fill = "lightgray")
+# QQ plot
+ggqqplot(score$new_essay)
+#the essay score is normal distributed.
+```
+```{r normal distribution test of transfer score in two ways}
+#Shapiro-Wilk’s method
+library(rstatix)
+score %>% 
+  shapiro_test(transf.total)
+# Density plot
+library(ggpubr)
+ggdensity(score$transf.total, fill = "lightgray")
+# QQ plot
+ggqqplot(score$transf.total)
+#the transfer score is normal distributed.
+```
+```{r}
+
+```
+
